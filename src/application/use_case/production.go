@@ -1,9 +1,9 @@
 package use_case
 
 import (
-	"github.com/ViniAlvesMartins/tech-challenge-fiap/src/application/contract"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap/src/entities/entity"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap/src/entities/enum"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/application/contract"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/entities/entity"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/entities/enum"
 	"log/slog"
 )
 
@@ -12,7 +12,13 @@ type ProductionUseCase struct {
 	logger     *slog.Logger
 }
 
-func NewPaymentUseCase(r *contract.ProductionRepository, logger *slog.Logger) *ProductionUseCase {
+//
+//UpdateStatusById(id int, status enum.ProductionStatus) error
+//GetById(id int) (*entity.Production, error)
+//GetAll() ([]entity.Production, error)
+//Create(production entity.Production) (entity.Production, error)
+
+func NewPaymentUseCase(r contract.ProductionRepository, logger *slog.Logger) *ProductionUseCase {
 	return &ProductionUseCase{
 		repository: r,
 		logger:     logger,
@@ -39,7 +45,7 @@ func (p *ProductionUseCase) GetById(id int) (*entity.Production, error) {
 	return prodution, nil
 }
 
-func (p *ProductionUseCase) GetAll() (*[]entity.Production, error) {
+func (p *ProductionUseCase) GetAll() ([]entity.Production, error) {
 	productions, err := p.repository.GetAll()
 
 	if err != nil {

@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap/infra"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap/src/application/use_case"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap/src/external/database/dynamodb"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap/src/external/handler/http_server"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap/src/external/repository"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/infra"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/application/use_case"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/external/database/dynamodb"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/external/handler/http_server"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/external/repository"
 	"log/slog"
 	"os"
 )
