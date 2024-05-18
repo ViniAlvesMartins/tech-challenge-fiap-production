@@ -1,26 +1,26 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ze-burguer-app
+  name: ze-burguer-production
 spec:
   selector:
     matchLabels:
-      app:  ze-burguer
+      app:  ze-burguer-production
   template:
     metadata:
       labels:
-        app: ze-burguer
+        app: ze-burguer-production
     spec:
       containers:
-        - name: ze-burguer
+        - name: ze-burguer-production
           image: marcosilva/ze_burguer:latest
           ports:
             - containerPort: 8080
           envFrom:
           - configMapRef:
-              name: ze-burguer
+              name: ze-burguer-production
           - secretRef:
-              name: ze-burguer
+              name: ze-burguer-production
           resources:
             requests:
               cpu: "30m"
@@ -30,12 +30,12 @@ spec:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: ze-burguer
+  name: ze-burguer-production
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: ze-burguer-app
+    name: ze-burguer-production
   minReplicas: 2
   maxReplicas: 5
   metrics:
@@ -49,7 +49,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ze-burguer
+  name: ze-burguer-production
   annotations:
     # Note that the backend talks over HTTP.
     service.beta.kubernetes.io/aws-load-balancer-backend-protocol: http
@@ -62,7 +62,7 @@ metadata:
 spec:
   type: LoadBalancer
   selector:
-    app: ze-burguer
+    app: ze-burguer-production
   ports:
     - protocol: TCP
       port: 80
@@ -71,7 +71,7 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: ze-burguer
+  name: ze-burguer-production
 data:
   DATABASE_HOST: "zeburger-db.cpwm48q0wvgx.us-east-1.rds.amazonaws.com"
   DATABASE_PORT: "5432"
@@ -83,7 +83,7 @@ data:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: ze-burguer
+  name: ze-burguer-production
 type: Opaque
 data:
   DATABASE_PASSWORD: NyU3Y2oyd2xPbU1YcENiUgo=
