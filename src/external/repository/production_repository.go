@@ -59,32 +59,6 @@ func (p *ProductionRepository) Create(production entity.Production) (*entity.Pro
 	return &production, nil
 }
 
-func (p *ProductionRepository) GetAll() ([]entity.Production, error) {
-
-	production := &entity.Production{}
-
-	table := "Productions"
-
-	out, err := p.db.G(context.TODO(), &dynamodb.GetItemInput{
-		TableName: aws.String(table),
-		Key: map[string]types.AttributeValue{
-			"orderId": &types.AttributeValueMemberN{Value: fmt.Sprint(orderId)},
-		},
-	})
-
-	if err != nil {
-		panic(err)
-	}
-
-	err = attributevalue.UnmarshalMap(out.Item, &production)
-
-	if err != nil {
-		panic(err)
-	}
-
-	return production, nil
-}
-
 func (p *ProductionRepository) GetById(productionId int) (*entity.Production, error) {
 
 	production := &entity.Production{}

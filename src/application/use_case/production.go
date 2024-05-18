@@ -12,12 +12,6 @@ type ProductionUseCase struct {
 	logger     *slog.Logger
 }
 
-//
-//UpdateStatusById(id int, status enum.ProductionStatus) error
-//GetById(id int) (*entity.Production, error)
-//GetAll() ([]entity.Production, error)
-//Create(production entity.Production) (entity.Production, error)
-
 func NewPaymentUseCase(r contract.ProductionRepository, logger *slog.Logger) *ProductionUseCase {
 	return &ProductionUseCase{
 		repository: r,
@@ -25,14 +19,14 @@ func NewPaymentUseCase(r contract.ProductionRepository, logger *slog.Logger) *Pr
 	}
 }
 
-func (p *ProductionUseCase) UpdateStatusById(id int, status enum.ProductionStatus) error {
-	err := p.repository.UpdateStatusById(id, status)
-
+func (p *ProductionUseCase) UpdateStatusById(id int, status enum.ProductionStatus) (bool, error) {
+	_, err := p.repository.UpdateStatusById(id, status)
 	if err != nil {
-		return err
+		return false, err
 	}
 
-	return nil
+	//evento pedido atualizado
+	return true, nil
 }
 
 func (p *ProductionUseCase) GetById(id int) (*entity.Production, error) {
@@ -45,16 +39,6 @@ func (p *ProductionUseCase) GetById(id int) (*entity.Production, error) {
 	return prodution, nil
 }
 
-func (p *ProductionUseCase) GetAll() ([]entity.Production, error) {
-	productions, err := p.repository.GetAll()
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &productions, nil
-}
-
 func (p *ProductionUseCase) Create(production entity.Production) (*entity.Production, error) {
 	production.Status = enum.AWAITING_PAYMENT
 
@@ -64,5 +48,5 @@ func (p *ProductionUseCase) Create(production entity.Production) (*entity.Produc
 		return nil, err
 	}
 
-	return &productionNew, nil
+	return productionNew, nil
 }

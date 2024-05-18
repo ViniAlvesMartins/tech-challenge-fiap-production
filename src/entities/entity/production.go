@@ -9,7 +9,7 @@ import (
 )
 
 type Production struct {
-	ProductionId int                   `json:"production_id"`
+	ProductionId string                `json:"production_id"`
 	OrderId      *int                  `json:"order_id"`
 	Status       enum.ProductionStatus `json:"status"`
 	CreatedAt    time.Time             `json:"created_at,omitempty"`

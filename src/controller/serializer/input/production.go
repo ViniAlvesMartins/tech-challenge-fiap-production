@@ -7,17 +7,17 @@ import (
 )
 
 type ProductionDto struct {
-	ID        int                   `json:"id"`
+	ID        string                `json:"id"`
 	OrderId   *int                  `json:"order_id"`
-	Status    enum.StatusProduction `json:"status"`
+	Status    enum.ProductionStatus `json:"status"`
 	CreatedAt time.Time             `json:"created_at,omitempty"`
 }
 
 func (p *ProductionDto) ConvertToEntity() entity.Production {
 	return entity.Production{
-		ID:        p.ID,
-		OrderId:   p.OrderId,
-		Status:    p.Status,
-		CreatedAt: p.CreatedAt,
+		ProductionId: p.ID,
+		OrderId:      p.OrderId,
+		Status:       p.Status,
+		CreatedAt:    p.CreatedAt,
 	}
 }

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/application/contract"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/controller/serializer/input"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/controller/serializer/output"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/entities/enum"
 	"github.com/gorilla/mux"
 	"log/slog"
@@ -21,64 +20,6 @@ func NewProductionController(productionUseCase contract.ProductionUseCase, logge
 	return &ProductionController{
 		productionUseCase: productionUseCase,
 		logger:            logger,
-	}
-}
-
-// CreateProduction godoc
-// @Summary      Create production
-// @Description  Place a new production
-// @Tags         Productions
-// @Accept       json
-// @Produce      json
-// @Param        request   body      input.ProductionDto  true  "Production properties"
-// @Success      201  {object}  Response{data=output.ProductionDto}
-// @Failure      500  {object}  swagger.InternalServerErrorResponse{data=interface{}}
-// @Failure      404  {object}  swagger.ResourceNotFoundResponse{data=interface{}}
-// @Router       /productions [post]
-func (p *ProductionController) CreateProduction(w http.ResponseWriter, r *http.Request) {
-	var productionDto input.ProductionDto
-
-	if err := json.NewDecoder(r.Body).Decode(&productionDto); err != nil {
-		p.logger.Error("unable to decode the request body", slog.Any("error", err.Error()))
-
-		w.WriteHeader(http.StatusInternalServerError)
-		err := json.NewEncoder(w).Encode(
-			Response{
-				Error: "Unable to decode the request body",
-				Data:  nil,
-			})
-		if err != nil {
-			return
-		}
-	}
-
-	production, err := p.productionUseCase.Create(productionDto.ConvertToEntity())
-	if err != nil {
-		p.logger.Error("error creating order", slog.Any("error", err.Error()))
-
-		w.WriteHeader(http.StatusInternalServerError)
-		err := json.NewEncoder(w).Encode(
-			Response{
-				Error: "Error creating order",
-				Data:  nil,
-			})
-		if err != nil {
-			return
-		}
-		return
-	}
-
-	orderOutput := output.ProductionFromEntity(production)
-
-	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	err = json.NewEncoder(w).Encode(
-		Response{
-			Error: "",
-			Data:  orderOutput,
-		})
-	if err != nil {
-		return
 	}
 }
 
@@ -162,17 +103,9 @@ func (p *ProductionController) UpdateProductionStatusById(w http.ResponseWriter,
 		}
 	}
 
-	if err := p.productionUseCase.UpdateStatusById(productionId, enum.StatusProduction(statusProductionDto.Status)); err != nil {
-		p.logger.Error("error updating status by id", slog.Any("error", err.Error()))
-
-		w.WriteHeader(http.StatusInternalServerError)
-		err := json.NewEncoder(w).Encode(Response{
-			Error: "Error updating status",
-			Data:  nil,
-		})
-		if err != nil {
-			return
-		}
+	_, err = p.productionUseCase.UpdateStatusById(productionId, enum.ProductionStatus(statusProductionDto.Status))
+	if err != nil {
+		return
 	}
 
 	w.Header().Add("Content-Type", "application/json")
