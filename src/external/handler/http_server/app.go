@@ -2,9 +2,9 @@ package http_server
 
 import (
 	"context"
-	_ "github.com/ViniAlvesMartins/tech-challenge-fiap/doc/swagger"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap/src/application/contract"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap/src/controller/controller"
+	_ "github.com/ViniAlvesMartins/tech-challenge-fiap-production/doc/swagger"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/application/contract"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/controller/controller"
 	"github.com/gorilla/mux"
 	"github.com/swaggo/http-swagger/v2"
 	"log/slog"

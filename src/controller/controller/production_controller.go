@@ -2,10 +2,10 @@ package controller
 
 import (
 	"encoding/json"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap/src/application/contract"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap/src/controller/serializer/input"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap/src/controller/serializer/output"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap/src/entities/enum"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/application/contract"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/controller/serializer/input"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/controller/serializer/output"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/entities/enum"
 	"github.com/gorilla/mux"
 	"log/slog"
 	"net/http"

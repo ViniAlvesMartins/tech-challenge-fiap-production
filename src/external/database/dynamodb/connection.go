@@ -2,7 +2,7 @@ package dynamodb
 
 import (
 	"context"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap/infra"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/infra"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
