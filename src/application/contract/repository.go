@@ -10,3 +10,7 @@ type ProductionRepository interface {
 	GetById(id int) (*entity.Production, error)
 	Create(production entity.Production) (*entity.Production, error)
 }
+
+type SnsService interface {
+	SendMessage(productionId int, status enum.ProductionStatus) (bool, error)
+}

@@ -1,6 +1,7 @@
 package use_case
 
 import (
+	"fmt"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/application/contract"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/entities/entity"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/entities/enum"
@@ -9,12 +10,14 @@ import (
 
 type ProductionUseCase struct {
 	repository contract.ProductionRepository
+	snsService contract.SnsService
 	logger     *slog.Logger
 }
 
-func NewPaymentUseCase(r contract.ProductionRepository, logger *slog.Logger) *ProductionUseCase {
+func NewPaymentUseCase(r contract.ProductionRepository, s contract.SnsService, logger *slog.Logger) *ProductionUseCase {
 	return &ProductionUseCase{
 		repository: r,
+		snsService: s,
 		logger:     logger,
 	}
 }
@@ -25,7 +28,14 @@ func (p *ProductionUseCase) UpdateStatusById(id int, status enum.ProductionStatu
 		return false, err
 	}
 
-	//evento pedido atualizado
+	res, err := p.snsService.SendMessage(id, status)
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(res)
+
 	return true, nil
 }
 
@@ -40,8 +50,6 @@ func (p *ProductionUseCase) GetById(id int) (*entity.Production, error) {
 }
 
 func (p *ProductionUseCase) Create(production entity.Production) (*entity.Production, error) {
-	production.Status = enum.AWAITING_PAYMENT
-
 	productionNew, err := p.repository.Create(production)
 
 	if err != nil {
