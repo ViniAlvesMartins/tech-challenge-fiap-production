@@ -11,6 +11,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/google/uuid"
 	"log/slog"
+	"strconv"
+	"time"
 )
 
 type ProductionRepository struct {
@@ -34,15 +36,15 @@ type Item struct {
 
 func (p *ProductionRepository) Create(production entity.Production) (*entity.Production, error) {
 
-	table := "Productions"
+	table := "productions"
 	id := uuid.New().String()
 
 	input := &dynamodb.PutItemInput{
 		Item: map[string]types.AttributeValue{
-			"orderId":      &types.AttributeValueMemberN{Value: fmt.Sprint(production.OrderId)},
+			"orderId":      &types.AttributeValueMemberN{Value: strconv.Itoa(production.OrderId)},
 			"productionId": &types.AttributeValueMemberS{Value: id},
 			"status":       &types.AttributeValueMemberS{Value: string(production.Status)},
-			"createdAt":    &types.AttributeValueMemberS{Value: production.CreatedAt.String()},
+			"createdAt":    &types.AttributeValueMemberS{Value: time.Now().String()},
 		},
 		TableName: aws.String(table),
 	}
@@ -59,42 +61,16 @@ func (p *ProductionRepository) Create(production entity.Production) (*entity.Pro
 	return &production, nil
 }
 
-func (p *ProductionRepository) GetAll() ([]entity.Production, error) {
+func (p *ProductionRepository) GetById(orderId int) (*entity.Production, error) {
 
 	production := &entity.Production{}
 
-	table := "Productions"
-
-	out, err := p.db.G(context.TODO(), &dynamodb.GetItemInput{
-		TableName: aws.String(table),
-		Key: map[string]types.AttributeValue{
-			"orderId": &types.AttributeValueMemberN{Value: fmt.Sprint(orderId)},
-		},
-	})
-
-	if err != nil {
-		panic(err)
-	}
-
-	err = attributevalue.UnmarshalMap(out.Item, &production)
-
-	if err != nil {
-		panic(err)
-	}
-
-	return production, nil
-}
-
-func (p *ProductionRepository) GetById(productionId int) (*entity.Production, error) {
-
-	production := &entity.Production{}
-
-	table := "Payments"
+	table := "productions"
 
 	out, err := p.db.GetItem(context.TODO(), &dynamodb.GetItemInput{
 		TableName: aws.String(table),
 		Key: map[string]types.AttributeValue{
-			"orderId": &types.AttributeValueMemberN{Value: fmt.Sprint(productionId)},
+			"orderId": &types.AttributeValueMemberN{Value: strconv.Itoa(orderId)},
 		},
 	})
 
@@ -111,14 +87,13 @@ func (p *ProductionRepository) GetById(productionId int) (*entity.Production, er
 	return production, nil
 }
 
-func (p *ProductionRepository) UpdateStatusById(paymentId int, status enum.ProductionStatus) (bool, error) {
-
-	table := "Productions"
+func (p *ProductionRepository) UpdateStatusById(orderId int, status enum.ProductionStatus) (bool, error) {
+	table := "productions"
 
 	_, err := p.db.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
 		TableName: aws.String(table),
 		Key: map[string]types.AttributeValue{
-			"paymentId": &types.AttributeValueMemberN{Value: fmt.Sprint(paymentId)},
+			"orderId": &types.AttributeValueMemberN{Value: strconv.Itoa(orderId)},
 		},
 		UpdateExpression: aws.String("set status = :status"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{

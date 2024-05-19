@@ -7,7 +7,9 @@ import (
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/application/use_case"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/external/database/dynamodb"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/external/handler/http_server"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/external/handler/sqs"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/external/repository"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/external/service"
 	"log/slog"
 	"os"
 )
@@ -32,15 +34,18 @@ func main() {
 		logger.Error("error connecting tdo database", err)
 		panic(err)
 	}
-
 	fmt.Println(db)
 
+	sqsService := service.NewSqsService()
+	snsService := service.NewSnsService()
 	productionRepository := repository.NewProductionRepository(db, logger)
-	productionUseCase := use_case.NewPaymentUseCase(productionRepository, logger)
+	productionUseCase := use_case.NewPaymentUseCase(productionRepository, snsService, logger)
 
 	app := http_server.NewApp(productionUseCase, logger)
+	consumerSqs := sqs.NewSqsConsumer(sqsService, productionUseCase, logger)
 
 	err = app.Run(ctx)
+	go consumerSqs.Run()
 
 	if err != nil {
 		logger.Error("error running application", err)
