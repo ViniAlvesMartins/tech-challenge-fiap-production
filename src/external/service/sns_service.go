@@ -30,12 +30,12 @@ func NewConnectionSns() (*sns.Client, error) {
 	return client, nil
 }
 
-func (s *SnsService) SendMessage(paymentId int, status enum.ProductionStatus) (bool, error) {
+func (s *SnsService) SendMessage(orderId int, status enum.ProductionStatus) (bool, error) {
 
 	client, _ := NewConnectionSns()
 
 	message := &Message{
-		OrderId: paymentId,
+		OrderId: orderId,
 		Status:  status,
 	}
 
