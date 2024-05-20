@@ -18,7 +18,7 @@ type App struct {
 
 func NewApp(
 	productionUseCase contract.ProductionUseCase,
-	logger *slog.Logger
+	logger *slog.Logger,
 ) *App {
 	return &App{
 		logger:            logger,
@@ -30,10 +30,9 @@ func (e *App) Run(ctx context.Context) error {
 	router := mux.NewRouter()
 
 	productionController := controller.NewProductionController(e.productionUseCase, e.logger)
-	router.HandleFunc("/productions", productionController.CreateProduction).Methods("POST")
 	router.HandleFunc("/productions/{productionId:[0-9]+}", productionController.UpdateProductionStatusById).Methods("PATCH")
 
 	router.PathPrefix("/docs").Handler(httpSwagger.WrapHandler)
 
-	return http.ListenAndServe(":8080", router)
+	return http.ListenAndServe(":8082", router)
 }

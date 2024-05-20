@@ -8,8 +8,10 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.14
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.13.17
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.32.3
+	github.com/aws/aws-sdk-go-v2/service/sns v1.29.7
+	github.com/aws/aws-sdk-go-v2/service/sqs v1.32.2
 	github.com/google/uuid v1.4.0
-	github.com/gorilla/mux v1.8.0
+	github.com/gorilla/mux v1.8.1
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/swaggo/http-swagger/v2 v2.0.2
 	github.com/swaggo/swag v1.16.2

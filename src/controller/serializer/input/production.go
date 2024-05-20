@@ -3,21 +3,20 @@ package input
 import (
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/entities/entity"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/entities/enum"
-	"time"
 )
 
 type ProductionDto struct {
-	ID        int                   `json:"id"`
-	OrderId   *int                  `json:"order_id"`
-	Status    enum.StatusProduction `json:"status"`
-	CreatedAt time.Time             `json:"created_at,omitempty"`
+	OrderId      string                `json:"orderId"`
+	ProductionId string                `json:"productionId"`
+	CurrentState enum.ProductionStatus `json:"status"`
+	CreatedAt    string                `json:"created_at,omitempty"`
 }
 
 func (p *ProductionDto) ConvertToEntity() entity.Production {
 	return entity.Production{
-		ID:        p.ID,
-		OrderId:   p.OrderId,
-		Status:    p.Status,
-		CreatedAt: p.CreatedAt,
+		ProductionId: p.ProductionId,
+		OrderId:      p.OrderId,
+		CurrentState: p.CurrentState,
+		CreatedAt:    p.CreatedAt,
 	}
 }
