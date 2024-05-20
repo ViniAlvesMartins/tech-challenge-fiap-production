@@ -1,5 +1,5 @@
 resources:
 - namespace.yaml
-- ze-burguer.yaml
+- ze-burguer-production.yaml
 
 namespace: tech-challenge
