@@ -16,11 +16,6 @@ spec:
           image: marcosilva/ze_burguer_production:latest
           ports:
             - containerPort: 8082
-          envFrom:
-          - configMapRef:
-              name: ze-burguer-production
-          - secretRef:
-              name: ze-burguer-production
           resources:
             requests:
               cpu: "30m"
