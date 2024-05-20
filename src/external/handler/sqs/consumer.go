@@ -8,6 +8,7 @@ import (
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/entities/enum"
 	"log"
 	"log/slog"
+	"strconv"
 	"time"
 )
 
@@ -42,10 +43,8 @@ func (s *SqsConsumer) Run() error {
 			sqsMessageReturn := &SqsMessageReturn{}
 			json.Unmarshal([]byte(*message.Body), &sqsMessageReturn)
 
-			fmt.Println(sqsMessageReturn)
-
 			var production input.ProductionDto
-			production.OrderId = sqsMessageReturn.OrderId
+			production.OrderId = strconv.Itoa(sqsMessageReturn.OrderId)
 			production.CurrentState = enum.ProductionStatus(sqsMessageReturn.Status)
 
 			_, err = s.productionUseCase.Create(production.ConvertToEntity())
@@ -80,6 +79,6 @@ type SqsMessage struct {
 }
 
 type SqsMessageReturn struct {
-	OrderId string
+	OrderId int
 	Status  string
 }
