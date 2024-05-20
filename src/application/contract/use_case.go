@@ -8,5 +8,6 @@ import (
 type ProductionUseCase interface {
 	UpdateStatusById(id int, status enum.ProductionStatus) (bool, error)
 	GetById(id int) (*entity.Production, error)
+	GetAll() ([]*entity.Production, error)
 	Create(production entity.Production) (*entity.Production, error)
 }
