@@ -41,9 +41,9 @@ func (p *ProductionRepository) Create(production entity.Production) (*entity.Pro
 
 	input := &dynamodb.PutItemInput{
 		Item: map[string]types.AttributeValue{
-			"orderId":      &types.AttributeValueMemberN{Value: strconv.Itoa(production.OrderId)},
+			"orderId":      &types.AttributeValueMemberS{Value: production.OrderId},
 			"productionId": &types.AttributeValueMemberS{Value: id},
-			"status":       &types.AttributeValueMemberS{Value: string(production.Status)},
+			"currentState": &types.AttributeValueMemberS{Value: string(production.CurrentState)},
 			"createdAt":    &types.AttributeValueMemberS{Value: time.Now().String()},
 		},
 		TableName: aws.String(table),
@@ -70,18 +70,18 @@ func (p *ProductionRepository) GetById(orderId int) (*entity.Production, error) 
 	out, err := p.db.GetItem(context.TODO(), &dynamodb.GetItemInput{
 		TableName: aws.String(table),
 		Key: map[string]types.AttributeValue{
-			"orderId": &types.AttributeValueMemberN{Value: strconv.Itoa(orderId)},
+			"orderId": &types.AttributeValueMemberS{Value: strconv.Itoa(orderId)},
 		},
 	})
 
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	err = attributevalue.UnmarshalMap(out.Item, &production)
 
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	return production, nil
@@ -93,11 +93,11 @@ func (p *ProductionRepository) UpdateStatusById(orderId int, status enum.Product
 	_, err := p.db.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
 		TableName: aws.String(table),
 		Key: map[string]types.AttributeValue{
-			"orderId": &types.AttributeValueMemberN{Value: strconv.Itoa(orderId)},
+			"orderId": &types.AttributeValueMemberS{Value: strconv.Itoa(orderId)},
 		},
-		UpdateExpression: aws.String("set status = :status"),
+		UpdateExpression: aws.String("set currentState = :currentState"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":status": &types.AttributeValueMemberS{Value: string(status)},
+			":currentState": &types.AttributeValueMemberS{Value: string(status)},
 		},
 	})
 

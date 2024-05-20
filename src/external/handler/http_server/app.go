@@ -34,5 +34,5 @@ func (e *App) Run(ctx context.Context) error {
 
 	router.PathPrefix("/docs").Handler(httpSwagger.WrapHandler)
 
-	return http.ListenAndServe(":8080", router)
+	return http.ListenAndServe(":8082", router)
 }

@@ -35,8 +35,8 @@ func NewProductionController(productionUseCase contract.ProductionUseCase, logge
 // @Failure      404  {object}  swagger.ResourceNotFoundResponse{data=interface{}}
 // @Router       /productions/{id} [patch]
 func (p *ProductionController) UpdateProductionStatusById(w http.ResponseWriter, r *http.Request) {
-	orderIdParam := mux.Vars(r)["orderId"]
-	orderId, err := strconv.Atoi(orderIdParam)
+	productionIdParam := mux.Vars(r)["productionId"]
+	productionId, err := strconv.Atoi(productionIdParam)
 
 	if err != nil {
 		p.logger.Error("error converting productionId to int", slog.Any("error", err.Error()))
@@ -77,7 +77,16 @@ func (p *ProductionController) UpdateProductionStatusById(w http.ResponseWriter,
 		}
 	}
 
-	production, err := p.productionUseCase.GetById(orderId)
+	/*var productionEn entity.Production
+	productionEn.OrderId, _ = strconv.Atoi(productionIdParam)
+	productionEn.CurrentState = enum.ProductionStatus(statusProductionDto.Status)
+
+	_, err = p.productionUseCase.Create(productionEn)
+	if err != nil {
+		return
+	}*/
+
+	production, err := p.productionUseCase.GetById(productionId)
 	if err != nil {
 		p.logger.Error("error getting production by id", slog.Any("error", err.Error()))
 
@@ -103,7 +112,7 @@ func (p *ProductionController) UpdateProductionStatusById(w http.ResponseWriter,
 		}
 	}
 
-	_, err = p.productionUseCase.UpdateStatusById(orderId, enum.ProductionStatus(statusProductionDto.Status))
+	_, err = p.productionUseCase.UpdateStatusById(productionId, enum.ProductionStatus(statusProductionDto.Status))
 	if err != nil {
 		return
 	}
