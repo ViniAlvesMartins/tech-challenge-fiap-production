@@ -13,9 +13,9 @@ spec:
     spec:
       containers:
         - name: ze-burguer-production
-          image: marcosilva/ze_burguer:latest
+          image: marcosilva/ze_burguer_production:latest
           ports:
-            - containerPort: 8080
+            - containerPort: 8082
           envFrom:
           - configMapRef:
               name: ze-burguer-production
@@ -66,24 +66,5 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 8080
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: ze-burguer-production
-data:
-  DATABASE_HOST: "zeburger-db.cpwm48q0wvgx.us-east-1.rds.amazonaws.com"
-  DATABASE_PORT: "5432"
-  DATABASE_NAME: "zeburguer"
-  DATABASE_SCHEMA: "ze_burguer"
-  DATABASE_USERNAME: "zeburguer"
-  MIGRATIONS_DIR: "infra/database/migrations"
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: ze-burguer-production
-type: Opaque
-data:
-  DATABASE_PASSWORD: NyU3Y2oyd2xPbU1YcENiUgo=
+      targetPort: 8082
+
