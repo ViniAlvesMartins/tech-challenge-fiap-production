@@ -7,10 +7,12 @@ import (
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/entities/enum"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/google/uuid"
 	"log/slog"
+	"sort"
 	"strconv"
 	"time"
 )
@@ -27,15 +29,7 @@ func NewProductionRepository(db *dynamodb.Client, logger *slog.Logger) *Producti
 	}
 }
 
-type Item struct {
-	Id        string `json:"pk"`
-	OrderId   string `json:"sk"`
-	Status    string `json:"status"`
-	CreatedAt string `json:"created_at"`
-}
-
 func (p *ProductionRepository) Create(production entity.Production) (*entity.Production, error) {
-
 	table := "productions"
 	id := uuid.New().String()
 
@@ -44,7 +38,7 @@ func (p *ProductionRepository) Create(production entity.Production) (*entity.Pro
 			"orderId":      &types.AttributeValueMemberS{Value: production.OrderId},
 			"productionId": &types.AttributeValueMemberS{Value: id},
 			"currentState": &types.AttributeValueMemberS{Value: string(production.CurrentState)},
-			"createdAt":    &types.AttributeValueMemberS{Value: time.Now().String()},
+			"createdAt":    &types.AttributeValueMemberS{Value: time.Now().Format(time.DateTime)},
 		},
 		TableName: aws.String(table),
 	}
@@ -85,6 +79,52 @@ func (p *ProductionRepository) GetById(orderId int) (*entity.Production, error) 
 	}
 
 	return production, nil
+}
+
+func (p *ProductionRepository) GetAll() ([]*entity.Production, error) {
+
+	var productions []*entity.Production
+
+	table := "productions"
+
+	cond1 := expression.Name("currentState").NotEqual(expression.Value("FINISHED"))
+	proj := expression.NamesList(
+		expression.Name("orderId"),
+		expression.Name("productionId"),
+		expression.Name("currentState"),
+		expression.Name("createdAt"),
+	)
+	expr, err := expression.NewBuilder().
+		WithFilter(cond1).
+		WithProjection(proj).
+		Build()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	out, err := p.db.Scan(context.TODO(), &dynamodb.ScanInput{
+		TableName:                 aws.String(table),
+		ExpressionAttributeNames:  expr.Names(),
+		ExpressionAttributeValues: expr.Values(),
+		FilterExpression:          expr.Filter(),
+		ProjectionExpression:      expr.Projection(),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = attributevalue.UnmarshalListOfMaps(out.Items, &productions)
+
+	if err != nil {
+		return nil, err
+	}
+
+	sort.SliceStable(productions, func(i, j int) bool {
+		return productions[i].CreatedAt < productions[j].CreatedAt
+	})
+
+	return productions, nil
 }
 
 func (p *ProductionRepository) UpdateStatusById(orderId int, status enum.ProductionStatus) (bool, error) {

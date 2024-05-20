@@ -31,6 +31,7 @@ func (e *App) Run(ctx context.Context) error {
 
 	productionController := controller.NewProductionController(e.productionUseCase, e.logger)
 	router.HandleFunc("/productions/{productionId:[0-9]+}", productionController.UpdateProductionStatusById).Methods("PATCH")
+	router.HandleFunc("/productions", productionController.GetAllProductions).Methods("GET")
 
 	router.PathPrefix("/docs").Handler(httpSwagger.WrapHandler)
 

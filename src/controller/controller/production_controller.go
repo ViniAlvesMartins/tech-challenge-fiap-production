@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/application/contract"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/controller/serializer/input"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/entities/entity"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/entities/enum"
 	"github.com/gorilla/mux"
 	"log/slog"
@@ -23,9 +24,36 @@ func NewProductionController(productionUseCase contract.ProductionUseCase, logge
 	}
 }
 
+// GetAllProductions godoc
+// @Summary      Find all production
+// @Description  Find all production by id
+// @Tags         Production
+// @Produce      json
+// @Success      204  {object}  interface{}
+// @Failure      500  {object}  swagger.InternalServerErrorResponse{data=interface{}}
+// @Failure      404  {object}  swagger.ResourceNotFoundResponse{data=interface{}}
+// @Router       /productions
+func (p *ProductionController) GetAllProductions(w http.ResponseWriter, r *http.Request) {
+	var productions []*entity.Production
+
+	productions, err := p.productionUseCase.GetAll()
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(productions)
+	if err != nil {
+		return
+	}
+}
+
 // UpdateProductionStatusById godoc
-// @Summary      Find production
-// @Description  Find production by id
+// @Summary      Update production
+// @Description  Update production by id
 // @Tags         Production
 // @Produce      json
 // @Param        id   path      int  true  "Production ID"
@@ -76,15 +104,6 @@ func (p *ProductionController) UpdateProductionStatusById(w http.ResponseWriter,
 			return
 		}
 	}
-
-	/*var productionEn entity.Production
-	productionEn.OrderId, _ = strconv.Atoi(productionIdParam)
-	productionEn.CurrentState = enum.ProductionStatus(statusProductionDto.Status)
-
-	_, err = p.productionUseCase.Create(productionEn)
-	if err != nil {
-		return
-	}*/
 
 	production, err := p.productionUseCase.GetById(productionId)
 	if err != nil {

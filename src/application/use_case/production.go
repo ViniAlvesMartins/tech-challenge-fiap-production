@@ -49,6 +49,16 @@ func (p *ProductionUseCase) GetById(id int) (*entity.Production, error) {
 	return prodution, nil
 }
 
+func (p *ProductionUseCase) GetAll() ([]*entity.Production, error) {
+	productions, err := p.repository.GetAll()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return productions, nil
+}
+
 func (p *ProductionUseCase) Create(production entity.Production) (*entity.Production, error) {
 	productionNew, err := p.repository.Create(production)
 
