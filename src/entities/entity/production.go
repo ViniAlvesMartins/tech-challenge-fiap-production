@@ -3,16 +3,14 @@ package entity
 import (
 	"encoding/json"
 	"fmt"
-	"time"
-
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/entities/enum"
 )
 
 type Production struct {
-	OrderId      int                   `json:"orderId"`
+	OrderId      string                `json:"orderId"`
 	ProductionId string                `json:"productionId"`
-	Status       enum.ProductionStatus `json:"status"`
-	CreatedAt    time.Time             `json:"created_at,omitempty"`
+	CurrentState enum.ProductionStatus `json:"status"`
+	CreatedAt    string                `json:"created_at,omitempty"`
 }
 
 func (p *Production) GetJSONValue() (string, error) {

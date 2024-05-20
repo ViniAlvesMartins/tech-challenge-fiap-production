@@ -22,7 +22,7 @@ func NewConnectionSns() (*sns.Client, error) {
 	)
 
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	client := sns.NewFromConfig(cfg)

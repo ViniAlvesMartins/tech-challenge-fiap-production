@@ -2,10 +2,10 @@ package sqs
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/application/contract"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/controller/serializer/input"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/entities/enum"
-
 	"log"
 	"log/slog"
 	"time"
@@ -28,64 +28,43 @@ func NewSqsConsumer(queueService contract.QueueService,
 }
 
 func (s *SqsConsumer) Run() error {
-
 	queueUrl := "https://sqs.us-east-1.amazonaws.com/682279319757/to_production_order_queue.fifo"
-
-	for {
-
-		result, err := s.sqsService.ReceiveMessage(queueUrl)
-
-		if err != nil {
-			log.Printf("Failed to fetch sqs message %v", err)
-			continue
-		}
-
-		if result == nil {
-			log.Printf("Failed result sqs %v", result)
-			continue
-		} else {
-
-			sqsMessage := &SqsMessage{}
-
-			err := json.Unmarshal([]byte(*result.Body), &sqsMessage)
-			if err != nil {
-				return err
-			}
+	result, err := s.sqsService.ReceiveMessage(queueUrl)
+	if err != nil {
+		log.Printf("Failed to fetch sqs message %v", err)
+	}
+	if result == nil {
+		log.Printf("Failed result sqs %v", result)
+	} else {
+		for _, message := range *result {
+			fmt.Println("message: ", *message.Body)
 
 			sqsMessageReturn := &SqsMessageReturn{}
+			json.Unmarshal([]byte(*message.Body), &sqsMessageReturn)
 
-			log.Println(sqsMessage.Message)
-
-			err = json.Unmarshal([]byte(sqsMessage.Message), &sqsMessageReturn)
-			if err != nil {
-				return err
-			}
+			fmt.Println(sqsMessageReturn)
 
 			var production input.ProductionDto
 			production.OrderId = sqsMessageReturn.OrderId
-			production.Status = enum.PREPARING
+			production.CurrentState = enum.ProductionStatus(sqsMessageReturn.Status)
 
-			productionEntity := production.ConvertToEntity()
-
-			_, err = s.productionUseCase.Create(productionEntity)
-			if err != nil {
-				return err
-			}
-
+			_, err = s.productionUseCase.Create(production.ConvertToEntity())
 			if err != nil {
 				s.logger.Error("error create production", slog.Any("error", err.Error()))
+				return err
 			} else {
-				log.Printf(*result.ReceiptHandle)
-				err := s.sqsService.DeleteMessage(queueUrl, *result.ReceiptHandle)
+				log.Printf(*message.ReceiptHandle)
+				err := s.sqsService.DeleteMessage(queueUrl, *message.ReceiptHandle)
 				if err != nil {
 					return err
 				}
 			}
 
+			time.Sleep(5 * time.Second)
 		}
-
-		time.Sleep(5 * time.Second)
 	}
+
+	return err
 }
 
 type SqsMessage struct {
@@ -101,6 +80,6 @@ type SqsMessage struct {
 }
 
 type SqsMessageReturn struct {
-	OrderId int
+	OrderId string
 	Status  string
 }

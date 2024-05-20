@@ -29,7 +29,7 @@ func NewConnectionSqs() (*sqs.Client, error) {
 	return client, nil
 }
 
-func (s *SqsService) ReceiveMessage(queueURL string) (*types.Message, error) {
+func (s *SqsService) ReceiveMessage(queueURL string) (*[]types.Message, error) {
 
 	client, _ := NewConnectionSqs()
 
@@ -43,10 +43,8 @@ func (s *SqsService) ReceiveMessage(queueURL string) (*types.Message, error) {
 		log.Printf("Failed to fetch sqs message %v", err)
 	}
 
-	fmt.Println(len(out.Messages))
-
 	if len(out.Messages) >= 1 {
-		return &out.Messages[0], nil
+		return &out.Messages, nil
 	}
 
 	return nil, nil

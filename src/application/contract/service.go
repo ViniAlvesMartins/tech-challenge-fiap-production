@@ -5,7 +5,7 @@ import (
 )
 
 type QueueService interface {
-	ReceiveMessage(queueUrl string) (*types.Message, error)
+	ReceiveMessage(queueUrl string) (*[]types.Message, error)
 	DeleteMessage(queueURL string, receiptHandle string) error
 	SendMessage(queueUrl string, message string, messageGroupId string) error
 }
