@@ -30,40 +30,42 @@ func NewSqsConsumer(queueService contract.QueueService,
 
 func (s *SqsConsumer) Run() error {
 	queueUrl := "https://sqs.us-east-1.amazonaws.com/682279319757/to_production_order_queue.fifo"
-	result, err := s.sqsService.ReceiveMessage(queueUrl)
-	if err != nil {
-		log.Printf("Failed to fetch sqs message %v", err)
-	}
-	if result == nil {
-		log.Printf("Failed result sqs %v", result)
-	} else {
-		for _, message := range *result {
-			fmt.Println("message: ", *message.Body)
 
-			sqsMessageReturn := &SqsMessageReturn{}
-			json.Unmarshal([]byte(*message.Body), &sqsMessageReturn)
-
-			var production input.ProductionDto
-			production.OrderId = strconv.Itoa(sqsMessageReturn.OrderId)
-			production.CurrentState = enum.ProductionStatus(sqsMessageReturn.Status)
-
-			_, err = s.productionUseCase.Create(production.ConvertToEntity())
-			if err != nil {
-				s.logger.Error("error create production", slog.Any("error", err.Error()))
-				return err
-			} else {
-				log.Printf(*message.ReceiptHandle)
-				err := s.sqsService.DeleteMessage(queueUrl, *message.ReceiptHandle)
-				if err != nil {
-					return err
-				}
-			}
-
-			time.Sleep(5 * time.Second)
+	for {
+		result, err := s.sqsService.ReceiveMessage(queueUrl)
+		if err != nil {
+			log.Printf("Failed to fetch sqs message %v", err)
 		}
-	}
+		if result == nil {
+			log.Printf("Failed result sqs %v", result)
+		} else {
+			for _, message := range *result {
+				fmt.Println("message: ", *message.Body)
 
-	return err
+				sqsMessageReturn := &SqsMessageReturn{}
+				json.Unmarshal([]byte(*message.Body), &sqsMessageReturn)
+
+				var production input.ProductionDto
+				production.OrderId = strconv.Itoa(sqsMessageReturn.OrderId)
+				production.CurrentState = enum.ProductionStatus(sqsMessageReturn.Status)
+
+				_, err = s.productionUseCase.Create(production.ConvertToEntity())
+				if err != nil {
+					s.logger.Error("error create production", slog.Any("error", err.Error()))
+					return err
+				} else {
+					log.Printf(*message.ReceiptHandle)
+					err := s.sqsService.DeleteMessage(queueUrl, *message.ReceiptHandle)
+					if err != nil {
+						return err
+					}
+				}
+
+			}
+		}
+
+		time.Sleep(5 * time.Second)
+	}
 }
 
 type SqsMessage struct {
