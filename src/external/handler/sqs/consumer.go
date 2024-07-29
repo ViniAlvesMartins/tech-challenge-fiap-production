@@ -3,13 +3,14 @@ package sqs
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/application/contract"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/controller/serializer/input"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/entities/enum"
 	"log"
 	"log/slog"
 	"strconv"
 	"time"
+
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/application/contract"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/controller/serializer/input"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/entities/enum"
 )
 
 type SqsConsumer struct {
@@ -29,7 +30,7 @@ func NewSqsConsumer(queueService contract.QueueService,
 }
 
 func (s *SqsConsumer) Run() error {
-	queueUrl := "https://sqs.us-east-1.amazonaws.com/682279319757/to_production_order_queue.fifo"
+	queueUrl := "https://sqs.us-east-1.amazonaws.com/961381910932/to_production_order_queue.fifo"
 
 	for {
 		result, err := s.sqsService.ReceiveMessage(queueUrl)
