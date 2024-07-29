@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
+
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/entities/enum"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sns"
-	"log"
 )
 
 type SnsService struct{}
@@ -45,7 +46,7 @@ func (s *SnsService) SendMessage(orderId int, status enum.ProductionStatus) (boo
 
 	input := &sns.PublishInput{
 		Message:  aws.String(snsMessage),
-		TopicArn: aws.String("arn:aws:sns:us-east-1:682279319757:update_order_status-topic"),
+		TopicArn: aws.String("arn:aws:sns:us-east-1:961381910932:update_order_status-topic"),
 	}
 
 	result, err := client.Publish(context.TODO(), input)
