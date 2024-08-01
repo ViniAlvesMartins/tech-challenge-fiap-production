@@ -2,107 +2,104 @@ package repository
 
 import (
 	"context"
-	"fmt"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/entities/entity"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/entities/enum"
+	"errors"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-common/uuid"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/application/contract"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/entities/entity"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/entities/enum"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/google/uuid"
-	"log/slog"
 	"sort"
-	"strconv"
 	"time"
 )
 
+const table = "productions"
+
 type ProductionRepository struct {
-	db     *dynamodb.Client
-	logger *slog.Logger
+	db   contract.DynamoDB
+	uuid uuid.Interface
 }
 
-func NewProductionRepository(db *dynamodb.Client, logger *slog.Logger) *ProductionRepository {
+func NewProductionRepository(db *dynamodb.Client, u uuid.Interface) *ProductionRepository {
 	return &ProductionRepository{
-		db:     db,
-		logger: logger,
+		db:   db,
+		uuid: u,
 	}
 }
 
-func (p *ProductionRepository) Create(production entity.Production) (*entity.Production, error) {
-	table := "productions"
-	id := uuid.New().String()
+func (p *ProductionRepository) Create(ctx context.Context, production entity.Production) error {
+	production.ID = p.uuid.NewString()
+	production.CreatedAt = time.Now()
 
+	i, err := attributevalue.Marshal(production)
+	if err != nil {
+		return err
+	}
+
+	items := i.(*types.AttributeValueMemberM).Value
 	input := &dynamodb.PutItemInput{
-		Item: map[string]types.AttributeValue{
-			"orderId":      &types.AttributeValueMemberS{Value: production.OrderId},
-			"productionId": &types.AttributeValueMemberS{Value: id},
-			"currentState": &types.AttributeValueMemberS{Value: string(production.CurrentState)},
-			"createdAt":    &types.AttributeValueMemberS{Value: time.Now().Format(time.DateTime)},
-		},
+		Item:      items,
 		TableName: aws.String(table),
 	}
 
-	_, err := p.db.PutItem(context.TODO(), input)
-
-	if err != nil {
-		fmt.Println("Got error calling PutItem:")
-		fmt.Println(err.Error())
+	if _, err = p.db.PutItem(ctx, input); err != nil {
+		return err
 	}
 
-	production.ProductionId = id
-
-	return &production, nil
+	return nil
 }
 
-func (p *ProductionRepository) GetById(orderId int) (*entity.Production, error) {
+func (p *ProductionRepository) GetById(ctx context.Context, id string) (*entity.Production, error) {
+	var notFoundErr *types.ResourceNotFoundException
+	var production *entity.Production
 
-	production := &entity.Production{}
-
-	table := "productions"
-
-	out, err := p.db.GetItem(context.TODO(), &dynamodb.GetItemInput{
+	out, err := p.db.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(table),
 		Key: map[string]types.AttributeValue{
-			"orderId": &types.AttributeValueMemberS{Value: strconv.Itoa(orderId)},
+			"id": &types.AttributeValueMemberN{Value: id},
 		},
 	})
 
 	if err != nil {
+		if errors.As(err, &notFoundErr) {
+			return nil, nil
+		}
+
 		return nil, err
 	}
 
-	err = attributevalue.UnmarshalMap(out.Item, &production)
-
-	if err != nil {
+	if err = attributevalue.UnmarshalMap(out.Item, &production); err != nil {
 		return nil, err
 	}
 
 	return production, nil
 }
 
-func (p *ProductionRepository) GetAll() ([]*entity.Production, error) {
-
+func (p *ProductionRepository) GetAll(ctx context.Context) ([]*entity.Production, error) {
 	var productions []*entity.Production
 
-	table := "productions"
-
-	cond1 := expression.Name("currentState").NotEqual(expression.Value("FINISHED"))
-	proj := expression.NamesList(
-		expression.Name("orderId"),
-		expression.Name("productionId"),
-		expression.Name("currentState"),
-		expression.Name("createdAt"),
+	projection := expression.NamesList(
+		expression.Name("id"),
+		expression.Name("order_id"),
+		expression.Name("products"),
+		expression.Name("status"),
+		expression.Name("order_date"),
+		expression.Name("created_at"),
 	)
+
 	expr, err := expression.NewBuilder().
-		WithFilter(cond1).
-		WithProjection(proj).
+		WithFilter(expression.Name("status").NotEqual(expression.Value(enum.ProductionStatusFinished))).
+		WithProjection(projection).
 		Build()
+
 	if err != nil {
-		fmt.Println(err)
+		return nil, err
 	}
 
-	out, err := p.db.Scan(context.TODO(), &dynamodb.ScanInput{
+	out, err := p.db.Scan(ctx, &dynamodb.ScanInput{
 		TableName:                 aws.String(table),
 		ExpressionAttributeNames:  expr.Names(),
 		ExpressionAttributeValues: expr.Values(),
@@ -114,36 +111,28 @@ func (p *ProductionRepository) GetAll() ([]*entity.Production, error) {
 		return nil, err
 	}
 
-	err = attributevalue.UnmarshalListOfMaps(out.Items, &productions)
-
-	if err != nil {
+	if err = attributevalue.UnmarshalListOfMaps(out.Items, &productions); err != nil {
 		return nil, err
 	}
 
 	sort.SliceStable(productions, func(i, j int) bool {
-		return productions[i].CreatedAt < productions[j].CreatedAt
+		return productions[j].CreatedAt.After(productions[i].CreatedAt)
 	})
 
 	return productions, nil
 }
 
-func (p *ProductionRepository) UpdateStatusById(orderId int, status enum.ProductionStatus) (bool, error) {
-	table := "productions"
-
-	_, err := p.db.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
+func (p *ProductionRepository) UpdateStatusById(ctx context.Context, id string, status enum.ProductionStatus) error {
+	_, err := p.db.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName: aws.String(table),
 		Key: map[string]types.AttributeValue{
-			"orderId": &types.AttributeValueMemberS{Value: strconv.Itoa(orderId)},
+			"id": &types.AttributeValueMemberS{Value: id},
 		},
-		UpdateExpression: aws.String("set currentState = :currentState"),
+		UpdateExpression: aws.String("set status = :status"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":currentState": &types.AttributeValueMemberS{Value: string(status)},
+			":status": &types.AttributeValueMemberS{Value: string(status)},
 		},
 	})
 
-	if err != nil {
-		panic(err)
-	}
-
-	return true, nil
+	return err
 }

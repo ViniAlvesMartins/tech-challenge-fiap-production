@@ -2,19 +2,18 @@ package main
 
 import (
 	"context"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/infra"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/application/use_case"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/external/database/dynamodb"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/external/handler/http_server"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/external/handler/sqs"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/external/repository"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/src/external/service"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-common/dynamodb"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-common/sns"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-common/uuid"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/application/use_case"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/config"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/external/handler/http_server"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/external/repository"
+	snsproducer "github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/external/service/sns"
 	"log/slog"
 	"os"
 )
 
-// @title           Ze Burguer APIs
-// @version         1.0
 func main() {
 	var err error
 	var ctx = context.Background()
@@ -27,29 +26,43 @@ func main() {
 		panic(err)
 	}
 
-	db, err := dynamodb.NewConnection(cfg)
+	db, err := dynamodb.NewConnection(ctx)
 
 	if err != nil {
 		logger.Error("error connecting tdo database", err)
 		panic(err)
 	}
 
-	sqsService := service.NewSqsService()
-	snsService := service.NewSnsService()
-	productionRepository := repository.NewProductionRepository(db, logger)
-	productionUseCase := use_case.NewPaymentUseCase(productionRepository, snsService, logger)
+	orderSnsConnection, err := sns.NewConnection(ctx, cfg.OrderStatusUpdatedTopic)
+	if err != nil {
+		logger.Error("error connecting to sns", err)
+		panic(err)
+	}
+
+	orderUseCase := use_case.NewOrderUseCase(snsproducer.NewService(orderSnsConnection))
+
+	paymentSnsConnection, err := sns.NewConnection(ctx, cfg.PaymentStatusUpdatedTopic)
+	if err != nil {
+		logger.Error("error connecting to sns", err)
+		panic(err)
+	}
+
+	paymentUseCase := use_case.NewPaymentUseCase(snsproducer.NewService(paymentSnsConnection))
+
+	productionRepository := repository.NewProductionRepository(db, loadUUID())
+	productionUseCase := use_case.NewProductionUseCase(productionRepository, orderUseCase, paymentUseCase)
 
 	app := http_server.NewApp(productionUseCase, logger)
-	consumerSqs := sqs.NewSqsConsumer(sqsService, productionUseCase, logger)
 
-	go app.Run(ctx)
-	go consumerSqs.Run()
-
-	select {}
+	app.Run()
 }
 
-func loadConfig() (infra.Config, error) {
-	return infra.NewConfig()
+func loadUUID() uuid.Interface {
+	return &uuid.UUID{}
+}
+
+func loadConfig() (config.Config, error) {
+	return config.NewConfig()
 }
 
 func loadLogger() *slog.Logger {

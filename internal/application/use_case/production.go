@@ -1,70 +1,59 @@
 package use_case
 
 import (
-	"fmt"
+	"context"
+	"errors"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/application/contract"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/entities/entity"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/entities/enum"
-	"log/slog"
 )
 
+var ErrItemNotFound = errors.New("item not found in production")
+
 type ProductionUseCase struct {
-	repository contract.ProductionRepository
-	snsService contract.SnsService
-	logger     *slog.Logger
+	repository     contract.ProductionRepository
+	orderUseCase   contract.OrderUseCase
+	paymentUseCase contract.PaymentUseCase
 }
 
-func NewPaymentUseCase(r contract.ProductionRepository, s contract.SnsService, logger *slog.Logger) *ProductionUseCase {
+func NewProductionUseCase(r contract.ProductionRepository, o contract.OrderUseCase, p contract.PaymentUseCase) *ProductionUseCase {
 	return &ProductionUseCase{
-		repository: r,
-		snsService: s,
-		logger:     logger,
+		repository:     r,
+		orderUseCase:   o,
+		paymentUseCase: p,
 	}
 }
 
-func (p *ProductionUseCase) UpdateStatusById(id int, status enum.ProductionStatus) (bool, error) {
-	_, err := p.repository.UpdateStatusById(id, status)
+func (p *ProductionUseCase) UpdateStatusById(ctx context.Context, id string, status enum.ProductionStatus) error {
+	production, err := p.repository.GetById(ctx, id)
 	if err != nil {
-		return false, err
+		return err
 	}
 
-	res, err := p.snsService.SendMessage(id, status)
-
-	if err != nil {
-		panic(err)
+	if production == nil {
+		return ErrItemNotFound
 	}
 
-	fmt.Println(res)
+	err = p.repository.UpdateStatusById(ctx, id, status)
+	if err != nil {
+		return err
+	}
 
-	return true, nil
+	if status == enum.ProductionStatusCanceled {
+		return p.paymentUseCase.CancelPayment(ctx, production.OrderId)
+	}
+
+	return p.orderUseCase.UpdateOrderStatus(ctx, production.OrderId, status)
 }
 
-func (p *ProductionUseCase) GetById(id int) (*entity.Production, error) {
-	prodution, err := p.repository.GetById(id)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return prodution, nil
+func (p *ProductionUseCase) GetById(ctx context.Context, id string) (*entity.Production, error) {
+	return p.repository.GetById(ctx, id)
 }
 
-func (p *ProductionUseCase) GetAll() ([]*entity.Production, error) {
-	productions, err := p.repository.GetAll()
-
-	if err != nil {
-		return nil, err
-	}
-
-	return productions, nil
+func (p *ProductionUseCase) GetAll(ctx context.Context) ([]*entity.Production, error) {
+	return p.repository.GetAll(ctx)
 }
 
-func (p *ProductionUseCase) Create(production entity.Production) (*entity.Production, error) {
-	productionNew, err := p.repository.Create(production)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return productionNew, nil
+func (p *ProductionUseCase) Create(ctx context.Context, production entity.Production) error {
+	return p.repository.Create(ctx, production)
 }

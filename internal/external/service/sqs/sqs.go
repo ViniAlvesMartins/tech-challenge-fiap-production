@@ -87,6 +87,6 @@ func NewProducer(sqs *sqs.Service) *Producer {
 	return &Producer{service: sqs}
 }
 
-func (p *Producer) SendMessage(ctx context.Context, message string, groupID string) error {
-	return p.service.SendMessage(ctx, message, groupID)
+func (p *Producer) SendMessage(ctx context.Context, message string, key string) error {
+	return p.service.SendMessage(ctx, message, key)
 }

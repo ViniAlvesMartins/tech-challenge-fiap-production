@@ -1,26 +1,41 @@
 package enum
 
-import "slices"
+import (
+	"errors"
+	"slices"
+)
+
+var ErrInvalidProductionStatus = errors.New("invalid production status")
 
 type (
 	ProductionStatus string
 	OrderStatus      string
+	PaymentStatus    string
 )
 
 const (
+	ProductionStatusReceived  ProductionStatus = "RECEIVED"
 	ProductionStatusPreparing ProductionStatus = "PREPARING"
 	ProductionStatusReady     ProductionStatus = "READY"
 	ProductionStatusFinished  ProductionStatus = "FINISHED"
+	ProductionStatusCanceled  ProductionStatus = "CANCELED"
 
-	OrderStatusAwaitingPayment OrderStatus = "AWAITING_PAYMENT"
-	OrderStatusReceived        OrderStatus = "RECEIVED"
-	OrderStatusPreparing       OrderStatus = "PREPARING"
-	OrderStatusReady           OrderStatus = "READY"
-	OrderStatusCanceled        OrderStatus = "CANCELED"
-	OrderStatusFinished        OrderStatus = "FINISHED"
+	PaymentStatusPending   PaymentStatus = "PENDING"
+	PaymentStatusConfirmed PaymentStatus = "CONFIRMED"
+	PaymentStatusCanceled  PaymentStatus = "CANCELED"
+
+	OrderStatusReceived  OrderStatus = "RECEIVED"
+	OrderStatusPreparing OrderStatus = "PREPARING"
+	OrderStatusReady     OrderStatus = "READY"
+	OrderStatusFinished  OrderStatus = "FINISHED"
 )
 
-func ValidateStatus(val string) bool {
-	validStatus := []ProductionStatus{ProductionStatusPreparing, ProductionStatusReady, ProductionStatusFinished}
-	return slices.Contains(validStatus, ProductionStatus(val))
+func ValidateProductionStatus(val string) error {
+	validStatus := []ProductionStatus{ProductionStatusReceived, ProductionStatusPreparing, ProductionStatusReady, ProductionStatusFinished}
+
+	if !slices.Contains(validStatus, ProductionStatus(val)) {
+		return ErrInvalidProductionStatus
+	}
+
+	return nil
 }

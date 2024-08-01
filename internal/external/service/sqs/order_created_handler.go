@@ -3,26 +3,33 @@ package sqs
 import (
 	"context"
 	"encoding/json"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap-payment/internal/application/contract"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap-payment/internal/entities/enum"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/application/contract"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/entities/enum"
 	"log/slog"
+	"time"
 )
 
 type (
 	OrderCreatedMessage struct {
 		ID          int              `json:"id" gorm:"primaryKey;autoIncrement"`
 		OrderStatus enum.OrderStatus `json:"order_status"`
-		Amount      float32          `json:"amount"`
+		OrderDate   time.Time        `json:"created_at"`
+		Products    []*Product       `json:"products"`
+	}
+
+	Product struct {
+		ID          int    `json:"id" gorm:"primaryKey;autoIncrement"`
+		ProductName string `json:"product_name"`
 	}
 
 	OrderCreatedHandler struct {
-		payment contract.PaymentUseCase
-		logger  *slog.Logger
+		production contract.ProductionUseCase
+		logger     *slog.Logger
 	}
 )
 
-func NewOrderCreatedHandler(p contract.PaymentUseCase, l *slog.Logger) *OrderCreatedHandler {
-	return &OrderCreatedHandler{payment: p, logger: l}
+func NewOrderCreatedHandler(p contract.ProductionUseCase, l *slog.Logger) *OrderCreatedHandler {
+	return &OrderCreatedHandler{production: p, logger: l}
 }
 
 func (f *OrderCreatedHandler) Handle(ctx context.Context, b []byte) error {
@@ -34,5 +41,5 @@ func (f *OrderCreatedHandler) Handle(ctx context.Context, b []byte) error {
 		return err
 	}
 
-	return err
+	return nil
 }
