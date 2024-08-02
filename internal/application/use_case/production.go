@@ -3,12 +3,16 @@ package use_case
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/application/contract"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/entities/entity"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/entities/enum"
 )
 
-var ErrItemNotFound = errors.New("item not found in production")
+var (
+	ErrItemNotFound  = errors.New("item not found in production")
+	ErrInvalidStatus = errors.New("production item cannot be created with this status")
+)
 
 type ProductionUseCase struct {
 	repository     contract.ProductionRepository
@@ -55,5 +59,9 @@ func (p *ProductionUseCase) GetAll(ctx context.Context) ([]*entity.Production, e
 }
 
 func (p *ProductionUseCase) Create(ctx context.Context, production entity.Production) error {
+	if production.Status != enum.ProductionStatusReceived {
+		return fmt.Errorf("%w - %s", ErrInvalidStatus, production.Status)
+	}
+
 	return p.repository.Create(ctx, production)
 }

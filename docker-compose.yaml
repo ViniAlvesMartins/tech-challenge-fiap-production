@@ -16,3 +16,16 @@ services:
       - 8082:8082
     networks:
       - dev-networks
+
+  dev-app-production-order-created-worker:
+    container_name: worker.ze-burger-production-order-created.dev
+    env_file: .env
+    command: >
+      sh -c "go run cmd/worker/order_created_worker/main.go"
+    build:
+      dockerfile: ./infra/docker/local/Dockerfile
+      context: ./
+    volumes:
+      - .:/app
+    networks:
+      - dev-networks

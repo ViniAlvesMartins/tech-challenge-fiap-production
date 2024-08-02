@@ -27,16 +27,17 @@ func NewProductionController(productionUseCase contract.ProductionUseCase, logge
 // @Description  Find all production by id
 // @Tags         Production
 // @Produce      json
-// @Success      204  {object}  interface{}
+// @Success      200  {object}  interface{}
 // @Failure      500  {object}  swagger.InternalServerErrorResponse{data=interface{}}
 // @Failure      404  {object}  swagger.ResourceNotFoundResponse{data=interface{}}
-// @Router       /productions
+// @Router       /productions [get]
 func (p *ProductionController) GetAll(w http.ResponseWriter, r *http.Request) {
 	var ctx = r.Context()
 
 	productions, err := p.productionUseCase.GetAll(ctx)
 	if err != nil {
 		w.WriteHeader(http.StatusOK)
+		p.logger.Error("error listing productions: ", slog.Any("error", err.Error()))
 		jsonResponse, _ := json.Marshal(
 			Response{
 				Error: "error listing productions",

@@ -33,7 +33,7 @@ func NewProductionRepository(db *dynamodb.Client, u uuid.Interface) *ProductionR
 func (p *ProductionRepository) Create(ctx context.Context, production entity.Production) error {
 	production.ID = p.uuid.NewString()
 	production.CreatedAt = time.Now()
-
+	
 	i, err := attributevalue.Marshal(production)
 	if err != nil {
 		return err

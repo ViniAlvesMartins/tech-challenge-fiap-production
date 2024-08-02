@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/application/contract"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/entities/entity"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/entities/enum"
 	"log/slog"
 	"time"
@@ -34,6 +35,7 @@ func NewOrderCreatedHandler(p contract.ProductionUseCase, l *slog.Logger) *Order
 
 func (f *OrderCreatedHandler) Handle(ctx context.Context, b []byte) error {
 	var message OrderCreatedMessage
+	var products = make([]*entity.Product, 0)
 
 	f.logger.Info("Handling message...")
 
@@ -41,5 +43,23 @@ func (f *OrderCreatedHandler) Handle(ctx context.Context, b []byte) error {
 		return err
 	}
 
-	return nil
+	if message.OrderStatus != enum.OrderStatusAwaitingPayment {
+		return nil
+	}
+
+	for _, p := range message.Products {
+		products = append(products, &entity.Product{
+			ID:          p.ID,
+			ProductName: p.ProductName,
+		})
+	}
+
+	production := entity.Production{
+		OrderId:   message.ID,
+		OrderDate: message.OrderDate,
+		Products:  products,
+		Status:    enum.ProductionStatusReceived,
+	}
+
+	return f.production.Create(ctx, production)
 }

@@ -4,8 +4,8 @@ build:
 run-app:
 	docker-compose up dev-app-production
 
-run-worker:
-	docker-compose up dev-app-production-worker
+run-order-created-worker:
+	docker-compose up dev-app-production-order-created-worker
 
 start-infra:
 	docker-compose -f docker-compose-infra.yaml up

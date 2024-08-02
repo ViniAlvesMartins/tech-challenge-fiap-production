@@ -5,7 +5,7 @@ import (
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-common/dynamodb"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-common/sns"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-common/uuid"
-	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/application/use_case"
+	usecase "github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/application/use_case"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/config"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/external/handler/http_server"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/external/repository"
@@ -39,7 +39,7 @@ func main() {
 		panic(err)
 	}
 
-	orderUseCase := use_case.NewOrderUseCase(snsproducer.NewService(orderSnsConnection))
+	orderUseCase := usecase.NewOrderUseCase(snsproducer.NewService(orderSnsConnection))
 
 	paymentSnsConnection, err := sns.NewConnection(ctx, cfg.PaymentStatusUpdatedTopic)
 	if err != nil {
@@ -47,10 +47,10 @@ func main() {
 		panic(err)
 	}
 
-	paymentUseCase := use_case.NewPaymentUseCase(snsproducer.NewService(paymentSnsConnection))
+	paymentUseCase := usecase.NewPaymentUseCase(snsproducer.NewService(paymentSnsConnection))
 
 	productionRepository := repository.NewProductionRepository(db, loadUUID())
-	productionUseCase := use_case.NewProductionUseCase(productionRepository, orderUseCase, paymentUseCase)
+	productionUseCase := usecase.NewProductionUseCase(productionRepository, orderUseCase, paymentUseCase)
 
 	app := http_server.NewApp(productionUseCase, logger)
 

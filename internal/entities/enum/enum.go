@@ -24,10 +24,11 @@ const (
 	PaymentStatusConfirmed PaymentStatus = "CONFIRMED"
 	PaymentStatusCanceled  PaymentStatus = "CANCELED"
 
-	OrderStatusReceived  OrderStatus = "RECEIVED"
-	OrderStatusPreparing OrderStatus = "PREPARING"
-	OrderStatusReady     OrderStatus = "READY"
-	OrderStatusFinished  OrderStatus = "FINISHED"
+	OrderStatusReceived        OrderStatus = "RECEIVED"
+	OrderStatusPreparing       OrderStatus = "PREPARING"
+	OrderStatusReady           OrderStatus = "READY"
+	OrderStatusAwaitingPayment OrderStatus = "AWAITING_PAYMENT"
+	OrderStatusFinished        OrderStatus = "FINISHED"
 )
 
 func ValidateProductionStatus(val string) error {
