@@ -33,7 +33,7 @@ func NewProductionRepository(db *dynamodb.Client, u uuid.Interface) *ProductionR
 func (p *ProductionRepository) Create(ctx context.Context, production entity.Production) error {
 	production.ID = p.uuid.NewString()
 	production.CreatedAt = time.Now()
-	
+
 	i, err := attributevalue.Marshal(production)
 	if err != nil {
 		return err
@@ -59,7 +59,7 @@ func (p *ProductionRepository) GetById(ctx context.Context, id string) (*entity.
 	out, err := p.db.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(table),
 		Key: map[string]types.AttributeValue{
-			"id": &types.AttributeValueMemberN{Value: id},
+			"id": &types.AttributeValueMemberS{Value: id},
 		},
 	})
 
@@ -128,7 +128,10 @@ func (p *ProductionRepository) UpdateStatusById(ctx context.Context, id string, 
 		Key: map[string]types.AttributeValue{
 			"id": &types.AttributeValueMemberS{Value: id},
 		},
-		UpdateExpression: aws.String("set status = :status"),
+		UpdateExpression: aws.String("set #dynamo_status = :status"),
+		ExpressionAttributeNames: map[string]string{
+			"#dynamo_status": "status",
+		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":status": &types.AttributeValueMemberS{Value: string(status)},
 		},

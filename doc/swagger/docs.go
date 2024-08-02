@@ -83,7 +83,7 @@ const docTemplate = `{
                 "summary": "Update production",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Production ID",
                         "name": "id",
                         "in": "path",

@@ -62,7 +62,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       - description: Production status
         in: body
         name: request

@@ -29,7 +29,7 @@ services:
       - sh
       - -c
       - |
-        aws --endpoint-url=http://production-localstack:4566 dynamodb create-table --cli-input-json '{"TableName":"productions", "KeySchema":[{"AttributeName":"order_id","KeyType":"HASH"}], "AttributeDefinitions":[ {"AttributeName":"order_id","AttributeType":"N"}], "BillingMode":"PAY_PER_REQUEST"}' --region us-east-1 --output table | cat
+        aws --endpoint-url=http://production-localstack:4566 dynamodb create-table --cli-input-json '{"TableName":"productions", "KeySchema":[{"AttributeName":"id","KeyType":"HASH"}], "AttributeDefinitions":[ {"AttributeName":"id","AttributeType":"S"}], "BillingMode":"PAY_PER_REQUEST"}' --region us-east-1 --output table | cat
         aws --endpoint-url=http://production-localstack:4566 sns create-topic --name order_created-topic --region us-east-1 --output table | cat
         aws --endpoint-url=http://production-localstack:4566 sqs create-queue --queue-name production-failed-queue --region us-east-1 --output table | cat
         aws --endpoint-url=http://production-localstack:4566 sqs create-queue --queue-name production_order_created-queue --region us-east-1 --output table | cat

@@ -63,7 +63,7 @@ func (p *ProductionController) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Description  Update production by id
 // @Tags         Production
 // @Produce      json
-// @Param        id   path      int  true  "Production ID"
+// @Param        id   path      string  true  "Production ID"
 // @Param        request   body      input.StatusProductionDto  true  "Production status"
 // @Success      204  {object}  interface{}
 // @Failure      500  {object}  swagger.InternalServerErrorResponse{data=interface{}}
@@ -125,6 +125,7 @@ func (p *ProductionController) UpdateStatusById(w http.ResponseWriter, r *http.R
 
 	err = p.productionUseCase.UpdateStatusById(ctx, id, enum.ProductionStatus(statusProductionDto.Status))
 	if err != nil {
+		p.logger.Error("error updating status", slog.Any("error", err.Error()))
 		w.WriteHeader(http.StatusInternalServerError)
 		jsonResponse, _ := json.Marshal(
 			Response{
