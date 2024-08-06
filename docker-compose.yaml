@@ -29,3 +29,16 @@ services:
       - .:/app
     networks:
       - dev-networks
+
+  dev-app-production-payment-confirmed-worker:
+    container_name: worker.ze-burger-production-payment-confirmed.dev
+    env_file: .env
+    command: >
+      sh -c "go run cmd/worker/payment_confirmed_worker/main.go"
+    build:
+      dockerfile: ./infra/docker/local/Dockerfile
+      context: ./
+    volumes:
+      - .:/app
+    networks:
+      - dev-networks

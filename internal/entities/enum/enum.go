@@ -14,6 +14,7 @@ type (
 )
 
 const (
+	ProductionAwaitingPayment ProductionStatus = "AWAITING_PAYMENT"
 	ProductionStatusReceived  ProductionStatus = "RECEIVED"
 	ProductionStatusPreparing ProductionStatus = "PREPARING"
 	ProductionStatusReady     ProductionStatus = "READY"

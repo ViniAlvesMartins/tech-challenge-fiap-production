@@ -7,6 +7,9 @@ run-app:
 run-order-created-worker:
 	docker-compose up dev-app-production-order-created-worker
 
+run-payment-confirmed-worker:
+	docker-compose up dev-app-production-payment-confirmed-worker
+
 start-infra:
 	docker-compose -f docker-compose-infra.yaml up
 

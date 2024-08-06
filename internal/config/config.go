@@ -18,7 +18,6 @@ type Config struct {
 	OrderStatusUpdatedTopic   string `envconfig:"order_status_updated_topic"`
 	PaymentStatusUpdatedTopic string `envconfig:"order_status_updated_topic"`
 
-	OrderStatusUpdatedQueue     string `envconfig:"order_status_updated_queue"`
 	PaymentStatusUpdatedQueue   string `envconfig:"payment_status_updated_queue"`
 	ProductionOrderCreatedQueue string `envconfig:"production_order_created_queue"`
 }

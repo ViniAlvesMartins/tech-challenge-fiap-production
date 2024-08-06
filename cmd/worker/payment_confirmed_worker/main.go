@@ -37,7 +37,7 @@ func main() {
 		panic(err)
 	}
 
-	consumer, err := sqsservice.NewConnection(ctx, cfg.ProductionOrderCreatedQueue, 1, 20)
+	consumer, err := sqsservice.NewConnection(ctx, cfg.PaymentStatusUpdatedQueue, 1, 20)
 	if err != nil {
 		logger.Error("error connecting to sqs", err)
 		panic(err)
@@ -64,14 +64,14 @@ func main() {
 	productionRepository := repository.NewProductionRepository(db, loadUUID())
 
 	productionUseCase := usecase.NewProductionUseCase(productionRepository, orderUseCase, paymentUseCase)
-	orderCreatedHandler := sqs.NewOrderCreatedHandler(productionUseCase, logger)
+	paymentUpdatedHandler := sqs.NewPaymentStatusUpdateHandler(productionUseCase, logger)
 
 	logger.Info("Starting consumer...")
-	orderCreatedConsumer := sqs.NewConsumer(consumer, orderCreatedHandler, logger)
+	paymentConfirmedConsumer := sqs.NewConsumer(consumer, paymentUpdatedHandler, logger)
 
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go orderCreatedConsumer.Start(ctx, &wg)
+	go paymentConfirmedConsumer.Start(ctx, &wg)
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM)

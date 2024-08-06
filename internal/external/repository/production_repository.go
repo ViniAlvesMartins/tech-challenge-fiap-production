@@ -13,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"sort"
+	"strconv"
 	"time"
 )
 
@@ -52,14 +53,14 @@ func (p *ProductionRepository) Create(ctx context.Context, production entity.Pro
 	return nil
 }
 
-func (p *ProductionRepository) GetById(ctx context.Context, id string) (*entity.Production, error) {
+func (p *ProductionRepository) GetByOrderId(ctx context.Context, orderId int) (*entity.Production, error) {
 	var notFoundErr *types.ResourceNotFoundException
 	var production *entity.Production
 
 	out, err := p.db.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(table),
 		Key: map[string]types.AttributeValue{
-			"id": &types.AttributeValueMemberS{Value: id},
+			"order_id": &types.AttributeValueMemberN{Value: strconv.Itoa(orderId)},
 		},
 	})
 
@@ -91,7 +92,11 @@ func (p *ProductionRepository) GetAll(ctx context.Context) ([]*entity.Production
 	)
 
 	expr, err := expression.NewBuilder().
-		WithFilter(expression.Name("status").NotEqual(expression.Value(enum.ProductionStatusFinished))).
+		WithFilter(
+			expression.Name("status").NotEqual(expression.Value(enum.ProductionStatusFinished)).And(
+				expression.Name("status").NotEqual(expression.Value(enum.ProductionAwaitingPayment)),
+			),
+		).
 		WithProjection(projection).
 		Build()
 
@@ -122,11 +127,11 @@ func (p *ProductionRepository) GetAll(ctx context.Context) ([]*entity.Production
 	return productions, nil
 }
 
-func (p *ProductionRepository) UpdateStatusById(ctx context.Context, id string, status enum.ProductionStatus) error {
+func (p *ProductionRepository) UpdateStatusByOrderId(ctx context.Context, orderId int, status enum.ProductionStatus) error {
 	_, err := p.db.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName: aws.String(table),
 		Key: map[string]types.AttributeValue{
-			"id": &types.AttributeValueMemberS{Value: id},
+			"order_id": &types.AttributeValueMemberN{Value: strconv.Itoa(orderId)},
 		},
 		UpdateExpression: aws.String("set #dynamo_status = :status"),
 		ExpressionAttributeNames: map[string]string{

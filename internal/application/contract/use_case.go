@@ -8,8 +8,8 @@ import (
 
 type (
 	ProductionUseCase interface {
-		UpdateStatusById(ctx context.Context, id string, status enum.ProductionStatus) error
-		GetById(ctx context.Context, id string) (*entity.Production, error)
+		UpdateStatusByOrderId(ctx context.Context, orderId int, status enum.ProductionStatus) error
+		GetByOrderId(ctx context.Context, orderId int) (*entity.Production, error)
 		GetAll(ctx context.Context) ([]*entity.Production, error)
 		Create(ctx context.Context, production entity.Production) error
 	}

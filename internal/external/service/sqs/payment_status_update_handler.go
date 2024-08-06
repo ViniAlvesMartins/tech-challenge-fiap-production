@@ -4,23 +4,24 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/application/contract"
+	"github.com/ViniAlvesMartins/tech-challenge-fiap-production/internal/entities/enum"
 	"log/slog"
 )
 
 type (
 	PaymentStatusUpdateMessage struct {
-		OrderId int    `json:"order_id"`
-		Status  string `json:"status"`
+		OrderId int                `json:"order_id"`
+		Status  enum.PaymentStatus `json:"status"`
 	}
 
 	PaymentStatusUpdateHandler struct {
-		payment contract.PaymentUseCase
-		logger  *slog.Logger
+		production contract.ProductionUseCase
+		logger     *slog.Logger
 	}
 )
 
-func NewPaymentStatusUpdateHandler(p contract.PaymentUseCase, l *slog.Logger) *PaymentStatusUpdateHandler {
-	return &PaymentStatusUpdateHandler{payment: p, logger: l}
+func NewPaymentStatusUpdateHandler(p contract.ProductionUseCase, l *slog.Logger) *PaymentStatusUpdateHandler {
+	return &PaymentStatusUpdateHandler{production: p, logger: l}
 }
 
 func (f *PaymentStatusUpdateHandler) Handle(ctx context.Context, b []byte) error {
@@ -32,5 +33,18 @@ func (f *PaymentStatusUpdateHandler) Handle(ctx context.Context, b []byte) error
 		return err
 	}
 
-	return nil
+	if message.Status != enum.PaymentStatusConfirmed {
+		return nil
+	}
+
+	production, err := f.production.GetByOrderId(ctx, message.OrderId)
+	if err != nil {
+		return err
+	}
+
+	if production == nil {
+		return nil
+	}
+
+	return f.production.UpdateStatusByOrderId(ctx, production.OrderId, enum.ProductionStatusPreparing)
 }

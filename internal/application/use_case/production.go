@@ -28,8 +28,8 @@ func NewProductionUseCase(r contract.ProductionRepository, o contract.OrderUseCa
 	}
 }
 
-func (p *ProductionUseCase) UpdateStatusById(ctx context.Context, id string, status enum.ProductionStatus) error {
-	production, err := p.repository.GetById(ctx, id)
+func (p *ProductionUseCase) UpdateStatusByOrderId(ctx context.Context, orderId int, status enum.ProductionStatus) error {
+	production, err := p.repository.GetByOrderId(ctx, orderId)
 	if err != nil {
 		return err
 	}
@@ -38,7 +38,7 @@ func (p *ProductionUseCase) UpdateStatusById(ctx context.Context, id string, sta
 		return ErrItemNotFound
 	}
 
-	err = p.repository.UpdateStatusById(ctx, id, status)
+	err = p.repository.UpdateStatusByOrderId(ctx, orderId, status)
 	if err != nil {
 		return err
 	}
@@ -50,8 +50,8 @@ func (p *ProductionUseCase) UpdateStatusById(ctx context.Context, id string, sta
 	return p.orderUseCase.UpdateOrderStatus(ctx, production.OrderId, status)
 }
 
-func (p *ProductionUseCase) GetById(ctx context.Context, id string) (*entity.Production, error) {
-	return p.repository.GetById(ctx, id)
+func (p *ProductionUseCase) GetByOrderId(ctx context.Context, orderId int) (*entity.Production, error) {
+	return p.repository.GetByOrderId(ctx, orderId)
 }
 
 func (p *ProductionUseCase) GetAll(ctx context.Context) ([]*entity.Production, error) {
@@ -59,7 +59,7 @@ func (p *ProductionUseCase) GetAll(ctx context.Context) ([]*entity.Production, e
 }
 
 func (p *ProductionUseCase) Create(ctx context.Context, production entity.Production) error {
-	if production.Status != enum.ProductionStatusReceived {
+	if production.Status != enum.ProductionAwaitingPayment {
 		return fmt.Errorf("%w - %s", ErrInvalidStatus, production.Status)
 	}
 

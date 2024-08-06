@@ -58,7 +58,7 @@ func (f *OrderCreatedHandler) Handle(ctx context.Context, b []byte) error {
 		OrderId:   message.ID,
 		OrderDate: message.OrderDate,
 		Products:  products,
-		Status:    enum.ProductionStatusReceived,
+		Status:    enum.ProductionAwaitingPayment,
 	}
 
 	return f.production.Create(ctx, production)

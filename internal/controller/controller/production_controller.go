@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"log/slog"
 	"net/http"
+	"strconv"
 )
 
 type ProductionController struct {
@@ -63,7 +64,7 @@ func (p *ProductionController) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Description  Update production by id
 // @Tags         Production
 // @Produce      json
-// @Param        id   path      string  true  "Production ID"
+// @Param        id   path      int  true  "Production ID"
 // @Param        request   body      input.StatusProductionDto  true  "Production status"
 // @Success      204  {object}  interface{}
 // @Failure      500  {object}  swagger.InternalServerErrorResponse{data=interface{}}
@@ -73,8 +74,22 @@ func (p *ProductionController) UpdateStatusById(w http.ResponseWriter, r *http.R
 	var statusProductionDto input.StatusProductionDto
 	var id = mux.Vars(r)["id"]
 	var ctx = r.Context()
+	orderId, err := strconv.Atoi(id)
 
-	if err := json.NewDecoder(r.Body).Decode(&statusProductionDto); err != nil {
+	if err != nil {
+		p.logger.Error("error converting order id", slog.Any("error", err.Error()))
+
+		w.WriteHeader(http.StatusBadRequest)
+		jsonResponse, _ := json.Marshal(
+			Response{
+				Error: "error converting order id",
+				Data:  nil,
+			})
+		w.Write(jsonResponse)
+		return
+	}
+
+	if err = json.NewDecoder(r.Body).Decode(&statusProductionDto); err != nil {
 		p.logger.Error("unable to decode the request body", slog.Any("error", err.Error()))
 
 		w.WriteHeader(http.StatusBadRequest)
@@ -98,7 +113,7 @@ func (p *ProductionController) UpdateStatusById(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	production, err := p.productionUseCase.GetById(ctx, id)
+	production, err := p.productionUseCase.GetById(ctx, orderId)
 	if err != nil {
 		p.logger.Error("error getting production by id", slog.Any("error", err.Error()))
 
