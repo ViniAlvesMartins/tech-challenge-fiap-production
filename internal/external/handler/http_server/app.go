@@ -37,7 +37,7 @@ func (e *App) Run() {
 	router := mux.NewRouter()
 
 	productionController := controller.NewProductionController(e.productionUseCase, e.logger)
-	router.HandleFunc("/productions/{id:[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$}", productionController.UpdateStatusById).Methods("PATCH")
+	router.HandleFunc("/productions/{id:[0-9]+}", productionController.UpdateStatusById).Methods("PATCH")
 	router.HandleFunc("/productions", productionController.GetAll).Methods("GET")
 
 	router.PathPrefix("/docs").Handler(httpSwagger.WrapHandler)

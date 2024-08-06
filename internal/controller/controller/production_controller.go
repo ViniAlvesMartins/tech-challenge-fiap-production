@@ -113,7 +113,7 @@ func (p *ProductionController) UpdateStatusById(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	production, err := p.productionUseCase.GetById(ctx, orderId)
+	production, err := p.productionUseCase.GetByOrderId(ctx, orderId)
 	if err != nil {
 		p.logger.Error("error getting production by id", slog.Any("error", err.Error()))
 
@@ -138,7 +138,7 @@ func (p *ProductionController) UpdateStatusById(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	err = p.productionUseCase.UpdateStatusById(ctx, id, enum.ProductionStatus(statusProductionDto.Status))
+	err = p.productionUseCase.UpdateStatusByOrderId(ctx, orderId, enum.ProductionStatus(statusProductionDto.Status))
 	if err != nil {
 		p.logger.Error("error updating status", slog.Any("error", err.Error()))
 		w.WriteHeader(http.StatusInternalServerError)
