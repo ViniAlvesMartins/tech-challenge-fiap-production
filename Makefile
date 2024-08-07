@@ -20,7 +20,7 @@ mocks:
 	docker-compose run dev-app-production go generate ./...
 
 test:
-	docker-compose run dev-app-production go test ./...
+	docker-compose run dev-app-production go test ./... -v
 
 test-coverage:
 	docker-compose run dev-app-production go test -coverprofile cover.out `go list ./... | egrep -v '(/doc|/infra|/src/pkg/uuid/mock|/src/application/contract/mock|/src/external/handler/http_server|/api)$\'` && go tool cover -html=cover.out

@@ -11,7 +11,7 @@ type ProductionRepository interface {
 	Create(ctx context.Context, production entity.Production) error
 	GetByOrderId(ctx context.Context, orderId int) (*entity.Production, error)
 	GetAll(ctx context.Context) ([]*entity.Production, error)
-	UpdateStatusByOrderId(ctx context.Context, id int, status enum.ProductionStatus) error
+	UpdateStatusByOrderId(ctx context.Context, orderId int, status enum.ProductionStatus) error
 }
 
 type DynamoDB interface {
