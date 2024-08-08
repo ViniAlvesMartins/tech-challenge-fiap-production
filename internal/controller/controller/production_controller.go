@@ -37,7 +37,7 @@ func (p *ProductionController) GetAll(w http.ResponseWriter, r *http.Request) {
 
 	productions, err := p.productionUseCase.GetAll(ctx)
 	if err != nil {
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusInternalServerError)
 		p.logger.Error("error listing productions: ", slog.Any("error", err.Error()))
 		jsonResponse, _ := json.Marshal(
 			Response{
