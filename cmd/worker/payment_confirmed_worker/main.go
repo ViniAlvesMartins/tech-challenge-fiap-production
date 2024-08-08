@@ -49,7 +49,7 @@ func main() {
 		panic(err)
 	}
 
-	paymentSnsConnection, err := sns.NewConnection(ctx, cfg.PaymentStatusUpdatedTopic)
+	paymentSnsConnection, err := sns.NewConnection(ctx, cfg.ProductionFailedTopic)
 	if err != nil {
 		logger.Error("error connecting to payment sns", err)
 		panic(err)

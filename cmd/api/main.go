@@ -41,7 +41,7 @@ func main() {
 
 	orderUseCase := usecase.NewOrderUseCase(snsproducer.NewService(orderSnsConnection))
 
-	paymentSnsConnection, err := sns.NewConnection(ctx, cfg.PaymentStatusUpdatedTopic)
+	paymentSnsConnection, err := sns.NewConnection(ctx, cfg.ProductionFailedTopic)
 	if err != nil {
 		logger.Error("error connecting to sns", err)
 		panic(err)
