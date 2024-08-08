@@ -70,5 +70,4 @@ metadata:
 data:
   PAYMENT_STATUS_UPDATED_QUEUE: http://sqs.us-east-1.amazonaws.com/435304418663/payment_status_updated-queue
   PRODUCTION_ORDER_CREATED_QUEUE: http://sqs.us-east-1.amazonaws.com/435304418663/production_order_created-queue
-
-
+  ORDER_UPDATE_STATUS_QUEUE: http://sqs.us-east-1.amazonaws.com/435304418663/order_update_status-queue
