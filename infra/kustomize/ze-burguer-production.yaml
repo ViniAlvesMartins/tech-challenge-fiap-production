@@ -62,4 +62,13 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 8082
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ze-burguer-production
+data:
+  PAYMENT_STATUS_UPDATED_QUEUE: http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/payment_status_updated-queue
+  PRODUCTION_ORDER_CREATED_QUEUE: http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/production_order_created-queue
+
 
