@@ -24,6 +24,8 @@ Aplicação responsável pela gestão de pedidos da hamburgueria Zé do Burguer 
 
 [APIs](#documentação-da-api)
 
+[OWASP ZAP](#owasp-zap)
+
 ---
 
 ## Arquitetura
@@ -181,3 +183,5 @@ Deployments
       | READY  | 
       | FINISHED |
 
+Relatório se encontra na pasta ./doc/relatorio/payments-report.html
+![OWASP ZAP](./doc/relatorio/owasp.png)
