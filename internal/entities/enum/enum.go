@@ -33,7 +33,7 @@ const (
 )
 
 func ValidateProductionStatus(val string) error {
-	validStatus := []ProductionStatus{ProductionStatusReceived, ProductionStatusPreparing, ProductionStatusReady, ProductionStatusFinished}
+	validStatus := []ProductionStatus{ProductionStatusCanceled, ProductionStatusReceived, ProductionStatusPreparing, ProductionStatusReady, ProductionStatusFinished}
 
 	if !slices.Contains(validStatus, ProductionStatus(val)) {
 		return ErrInvalidProductionStatus
